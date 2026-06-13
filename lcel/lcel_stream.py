@@ -14,7 +14,7 @@ if not os.getenv('OPENAI_API_KEY'):
 
 #1. Define the components
 prompt = ChatPromptTemplate.from_template(
-    "Tell me a short story about {topic} no more than 50 words.."
+    "Tell me a short real life story about {topic} no more than 50 words.."
 )
 model = ChatOpenAI(model="gpt-4o-mini")
 parser= StrOutputParser() 
