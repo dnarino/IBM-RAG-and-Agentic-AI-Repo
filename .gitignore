@@ -9,3 +9,12 @@ wheels/
 
 # Virtual environments
 .venv
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+
+# Testing and linting
+.pytest_cache/
+.ruff_cache/
