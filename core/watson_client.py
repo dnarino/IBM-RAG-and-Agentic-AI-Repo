@@ -10,7 +10,7 @@ def get_watsonx_llm(params=None):
     Initializes and returns a WatsonxLLM instance securely using environment variables.
     This function creates the LLM object so you can use it in LangChain pipelines (LCEL).
     """
-    model_id = "ibm/granite-4-h-small"
+    model_id = "meta-llama/llama-3-3-70b-instruct"
 
     default_params = {
         "max_new_tokens": 256,
