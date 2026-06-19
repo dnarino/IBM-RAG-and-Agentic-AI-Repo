@@ -5,12 +5,11 @@ from langchain_ibm import WatsonxLLM, ChatWatsonx
 # Load environment variables from the .env file
 load_dotenv()
 
-def get_watsonx_llm(params=None):
+def get_watsonx_llm(model_id="meta-llama/llama-3-3-70b-instruct", params=None):
     """
     Initializes and returns a WatsonxLLM instance securely using environment variables.
     This function creates the LLM object so you can use it in LangChain pipelines (LCEL).
     """
-    model_id = "meta-llama/llama-3-3-70b-instruct"
 
     default_params = {
         "max_new_tokens": 256,
@@ -45,12 +44,11 @@ def get_watsonx_llm(params=None):
     # This allows us to use it anywhere in our LangChain pipelines!
     return granite_llm
 
-def get_watsonx_chat(params=None):
+def get_watsonx_chat(model_id="meta-llama/llama-3-3-70b-instruct", params=None):
     """
     Initializes and returns a ChatWatsonx instance securely using environment variables.
     This function creates the Chat object so you can use it in LangChain pipelines (LCEL).
     """
-    model_id = "meta-llama/llama-3-3-70b-instruct"
 
     default_params = {
         "max_new_tokens": 256,
