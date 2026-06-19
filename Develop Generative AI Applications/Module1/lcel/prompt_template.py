@@ -43,8 +43,20 @@ print(ai_message.content)
 print("\n--- Token Usage (IBM Meta Llama) ---")
 usage = ai_message.usage_metadata
 if usage:
-    print(f"Prompt Tokens (Input): {usage.get('input_tokens')}")
-    print(f"Completion Tokens (Output): {usage.get('output_tokens')}")
-    print(f"Total Tokens: {usage.get('total_tokens')}")
+    input_tokens = usage.get('input_tokens', 0)
+    output_tokens = usage.get('output_tokens', 0)
+    total_tokens = usage.get('total_tokens', 0)
+    
+    # Calculate approximate cost
+    # Note: IBM charges per 1,000 tokens. Update these rates based on your specific pricing tier!
+    cost_per_1k_input = 0.0009
+    cost_per_1k_output = 0.0009
+    
+    total_cost = (input_tokens / 1000 * cost_per_1k_input) + (output_tokens / 1000 * cost_per_1k_output)
+
+    print(f"Prompt Tokens (Input): {input_tokens}")
+    print(f"Completion Tokens (Output): {output_tokens}")
+    print(f"Total Tokens: {total_tokens}")
+    print(f"Total Cost (USD): ${total_cost:.6f}")
 else:
     print("Token usage not returned by the API.")
