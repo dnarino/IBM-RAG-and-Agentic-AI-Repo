@@ -31,9 +31,9 @@ from core.watson_client import get_watsonx_chat
 model_id='meta-llama/llama-3-3-70b-instruct'
 parameters = {
     "max_new_tokens": 256,
-    "temperature": 0.2,
-    "top_k": 5,         # Allow it to choose from the top 50 words
-    "top_p": 0.2         # Allow a wide variety of probability 
+    "temperature": 0.7,
+    "top_k": 50,         # Allow it to choose from the top 50 words
+    "top_p": 0.7         # Allow a wide variety of probability 
 }
 
 # 2. Get the modularized LLM
