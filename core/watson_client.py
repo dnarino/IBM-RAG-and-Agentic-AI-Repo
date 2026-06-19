@@ -1,11 +1,12 @@
 import os
+from typing import Optional, Dict, Any
 from dotenv import load_dotenv
 from langchain_ibm import WatsonxLLM, ChatWatsonx
 
 # Load environment variables from the .env file
 load_dotenv()
 
-def get_watsonx_llm(model_id="meta-llama/llama-3-3-70b-instruct", params=None):
+def get_watsonx_llm(model_id: str = "meta-llama/llama-3-3-70b-instruct", params: Optional[Dict[str, Any]] = None) -> WatsonxLLM:
     """
     Initializes and returns a WatsonxLLM instance securely using environment variables.
     This function creates the LLM object so you can use it in LangChain pipelines (LCEL).
@@ -44,7 +45,7 @@ def get_watsonx_llm(model_id="meta-llama/llama-3-3-70b-instruct", params=None):
     # This allows us to use it anywhere in our LangChain pipelines!
     return granite_llm
 
-def get_watsonx_chat(model_id="meta-llama/llama-3-3-70b-instruct", params=None):
+def get_watsonx_chat(model_id: str = "meta-llama/llama-3-3-70b-instruct", params: Optional[Dict[str, Any]] = None) -> ChatWatsonx:
     """
     Initializes and returns a ChatWatsonx instance securely using environment variables.
     This function creates the Chat object so you can use it in LangChain pipelines (LCEL).
