@@ -1,22 +1,6 @@
-# Suppress warnings
-from langchain_core.messages import AIMessage
-import warnings
-def warn(*args, **kwargs):
-    pass
-warnings.warn = warn
-warnings.filterwarnings('ignore')
-
-import os
-import sys
-
 from langchain_core.messages import HumanMessage, SystemMessage
 
-# Ensure the root directory is in the Python path so we can import 'core'
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
-if project_root not in sys.path:
-    sys.path.append(project_root)
 
-os.environ['ANONYMIZED_TELEMETRY'] = 'False'
 
 # Import our modularized client!
 from core.watson_client import get_watsonx_chat

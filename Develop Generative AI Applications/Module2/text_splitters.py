@@ -1,8 +1,3 @@
-import warnings
-def warn(*args, **kwargs):
-    pass
-warnings.warn = warn
-warnings.filterwarnings('ignore')
 
 import os
 import sys
@@ -11,12 +6,7 @@ from langchain_community.document_loaders import WebBaseLoader
 # Text splitters are used to divide large texts into smaller, manageable chunks
 from langchain_text_splitters import CharacterTextSplitter
 
-# Ensure the root directory is in the Python path so we can import 'core'
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
-if project_root not in sys.path:
-    sys.path.append(project_root)
 
-os.environ['ANONYMIZED_TELEMETRY'] = 'False'
 
 # Create a WebBaseLoader instance
 loader = WebBaseLoader("https://webcatolicodejavier.org/")

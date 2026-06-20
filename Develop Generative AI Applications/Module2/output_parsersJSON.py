@@ -1,11 +1,6 @@
 
 
 
-import warnings
-def warn(*args, **kwargs):
-    pass
-warnings.warn = warn
-warnings.filterwarnings('ignore')
 
 import os
 import sys
@@ -15,12 +10,7 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
 from pydantic import BaseModel, Field
 
-# Ensure the root directory is in the Python path so we can import 'core'
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
-if project_root not in sys.path:
-    sys.path.append(project_root)
 
-os.environ['ANONYMIZED_TELEMETRY'] = 'False'
 
 
 
