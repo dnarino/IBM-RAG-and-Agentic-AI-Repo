@@ -1,7 +1,5 @@
 from langchain_core.messages import HumanMessage, SystemMessage
 
-
-
 # Import our modularized client!
 from core.watson_client import get_watsonx_chat
 
