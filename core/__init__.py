@@ -9,6 +9,7 @@ load_dotenv()
 # Disable LangChain telemetry globally
 os.environ['ANONYMIZED_TELEMETRY'] = 'False'
 
+
 # Suppress annoying warnings globally
 def warn(*args, **kwargs):
     pass

@@ -18,3 +18,4 @@ wheels/
 # Testing and linting
 .pytest_cache/
 .ruff_cache/
+my_soccer_database/

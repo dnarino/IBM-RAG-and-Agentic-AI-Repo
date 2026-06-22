@@ -47,7 +47,38 @@ if __name__ == "__main__":
         chunks,
         watsonx_embedding
         )
+    # Use the docsearch vector store as a retriever
+    # This converts the vector store into a retriever interface that can fetch relevant documents
 
-    query="Goal"
-    docs = docsearch.similarity_search(query)
-    print(docs[0].page_content)
+    # Example 1: Default Retriever (Returns top 4 results)
+    retriever1 = docsearch.as_retriever()
+    docs1 = retriever1.invoke("fifa")
+    print(f"\n📚 Default Librarian brought back {len(docs1)} documents!")
+
+    # Example 2: Bring exactly 2 results (k=2)
+    retriever2 = docsearch.as_retriever(search_kwargs={"k": 2})
+    docs2 = retriever2.invoke("fifa")
+    print(f"📚 Filtered Librarian (k=2) brought back {len(docs2)} documents!")
+
+    # Example 3: Only bring results if they are an 80% match or higher
+    retriever3 = docsearch.as_retriever(
+        search_type="similarity_score_threshold", 
+        search_kwargs={"score_threshold": 0.8}
+    )
+    docs3 = retriever3.invoke("fifa")
+    print(f"📚 Threshold Librarian brought back {len(docs3)} documents!")
+
+    # Example 4: Randomize the results slightly so the Chatbot doesn't get bored (MMR)
+    retriever4 = docsearch.as_retriever(search_type="mmr")
+    docs4 = retriever4.invoke("fifa")
+    print(f"📚 MMR Librarian brought back {len(docs4)} documents!")
+
+    print("\n" + "="*50)
+    print("🔍 MMR RETRIEVER RESULTS:")
+    print("="*50)
+    for i, doc in enumerate(docs4, 1):
+        print(f"\n📄 Document {i}:")
+        print("-" * 50)
+        # .strip() removes any awkward empty lines at the start/end of the chunk
+        print(doc.page_content.strip())
+    print("\n" + "="*50)
