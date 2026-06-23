@@ -14,7 +14,6 @@ from langchain_classic.retrievers import ParentDocumentRetriever
 
 load_dotenv()
 
-
 # 1. Load a document about AI
 loader = WebBaseLoader("https://python.langchain.com/v0.2/docs/introduction/")
 web_data = loader.load()
