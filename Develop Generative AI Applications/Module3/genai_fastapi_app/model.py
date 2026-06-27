@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 
 
 # pyrefly: ignore [missing-import]
-from config import PARAMETERS, LLAMA_MODEL_ID, GRANITE_MODEL_ID, MISTRAL_MODEL_ID,OPENAI_MODEL_ID,GEMINI_MODEL_ID,DEEPSEEK_MODEL_ID
+from config import PARAMETERS, LLAMA_MODEL_ID, GRANITE_MODEL_ID, MISTRAL_MODEL_ID,OPENAI_MODEL_ID,GEMINI_MODEL_ID
 
 # 1. Define JSON output structure using Pydantic
 class AIResponse(BaseModel):
@@ -35,15 +35,6 @@ mistral_LLM = get_watsonx_chat(model_id=MISTRAL_MODEL_ID, params=PARAMETERS)
 
 openai_LLM = ChatOpenAI(model=OPENAI_MODEL_ID, temperature=0.2)
 gemini_LLM = ChatGoogleGenerativeAI(model=GEMINI_MODEL_ID, temperature=0.2)
-# DeepSeek (using the OpenAI client but pointing to DeepSeek's URL)
-
-deepseek_LLM = ChatOpenAI(
-    api_key=os.getenv("DEEPSEEK_API_KEY"),
-    base_url="https://integrate.api.nvidia.com/v1",
-    model=DEEPSEEK_MODEL_ID,
-    temperature=0.2
-)
-
 
 llama_template = PromptTemplate(
     template='''<|begin_of_text|><|start_header_id|>system<|end_header_id|>
@@ -77,7 +68,6 @@ chat_template = ChatPromptTemplate.from_messages([
 # We can reuse the exact same template for all three!
 openai_template = chat_template
 gemini_template = chat_template
-deepseek_template = chat_template
 
 # 5. Build the Chain
 def get_ai_response(model, template, system_prompt, user_prompt) -> AIResponse:
@@ -102,7 +92,3 @@ def openai_response(system_prompt, user_prompt):
 
 def gemini_response(system_prompt, user_prompt):
     return get_ai_response(gemini_LLM, gemini_template,system_prompt, user_prompt)
-
-def deepseek_response(system_prompt, user_prompt):
-    return get_ai_response(deepseek_LLM, deepseek_template,system_prompt, user_prompt)
-
