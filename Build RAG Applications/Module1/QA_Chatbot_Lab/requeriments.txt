@@ -1,0 +1,9 @@
+ibm-watsonx-ai
+langchain
+langchain-ibm
+transformers
+huggingface-hub
+sentence-transformers
+chromadb
+wget
+python-dotenv
