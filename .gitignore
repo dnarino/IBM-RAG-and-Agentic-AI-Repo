@@ -19,3 +19,8 @@ wheels/
 .pytest_cache/
 .ruff_cache/
 my_soccer_database/
+
+# Local databases and data folders
+chroma_db/
+workspace_data/
+
