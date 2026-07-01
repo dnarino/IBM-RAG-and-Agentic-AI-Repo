@@ -1,7 +1,5 @@
 import os
 import chromadb
-# Import core module to load environment variables (.env) and suppress warnings
-import core
 
 from llama_index.core import VectorStoreIndex, StorageContext, Settings
 from llama_index.vector_stores.chroma import ChromaVectorStore
