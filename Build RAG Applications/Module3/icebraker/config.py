@@ -25,4 +25,4 @@ OPENAI_MODEL_ID = "gpt-4o-mini"
 CHUNK_SIZE = 400  # Smaller chunks for more granular retrieval
 SIMILARITY_TOP_K = 7  # Retrieve more chunks for more comprehensive answers
 
-db_persistence_path='./'
+db_persistence_path="./chroma_db"

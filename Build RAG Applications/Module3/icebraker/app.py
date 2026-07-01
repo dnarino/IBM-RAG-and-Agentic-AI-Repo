@@ -19,7 +19,7 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.openai import OpenAI
 
 # pyrefly: ignore [missing-import]
-from modules.helper import search_and_scrape_person
+from modules.helper import search_and_scrape_person, verify_embeddings
 
 load_dotenv()
 
@@ -70,8 +70,11 @@ def main():
     documents = SimpleDirectoryReader(input_files=["data/scraped_profile.txt"]).load_data()
     
     # Build the index
-    index = VectorStoreIndex.from_documents(documents, storage_context=storage_context)
+    index = VectorStoreIndex.from_documents(documents, storage_context=storage_context, show_progress=True)
     print("Index successfully built!")
+    
+    # Verify embeddings logic
+    verify_embeddings(index)
     
     # Quick Verification Query
     query_engine = index.as_query_engine(similarity_top_k=SIMILARITY_TOP_K)
