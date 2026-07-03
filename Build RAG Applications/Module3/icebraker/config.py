@@ -1,16 +1,19 @@
-template_facts="""
-    generate 3 interesting facts about a person's career, education or developed projects
-    use the {context_str} how context.
-    URGENT: answer based only in the provided context.
-    output:Requests detailed answers about the person
-"""
+template_facts = """Context information is below.
+---------------------
+{context_str}
+---------------------
+Based ONLY on the context information above, generate exactly 3 interesting and distinct facts about this person's career, education, or developed projects.
+URGENT: If the context does not contain enough information to generate 3 facts, generate as many as possible based strictly on the context. Do not invent details.
+Format the output as a clean numbered list (1., 2., 3.)."""
 
-template_user_questions="""
-    Purpose: Answers spacific questions about a linkedIn profile
-    Context: Uses the {context_str} placeholder for Linkedin data
-    Query: Uses the {query_str} placeholder for the user's question
-    URGENT:answer based only on the context, and to say "I don't know" if the information isn't available
-"""
+template_user_questions = """Context information is below.
+---------------------
+{context_str}
+---------------------
+Given the context information, please answer this question: {query_str}
+
+URGENT: Answer based ONLY on the provided context. If the information is not available or cannot be inferred from the context, politely respond with exactly: "I am sorry, but I don't know the answer to that based on the provided profile."
+Make sure to formulate the response in a polite, professional, and highly formal corporate style."""
 
 #Model Parameters
 PARAMETERS={
