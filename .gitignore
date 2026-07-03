@@ -24,3 +24,6 @@ my_soccer_database/
 chroma_db/
 workspace_data/
 
+chroma.sqlite3
+data/
+chroma_db/
