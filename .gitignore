@@ -27,3 +27,5 @@ workspace_data/
 chroma.sqlite3
 data/
 chroma_db/
+chroma-data/
+
