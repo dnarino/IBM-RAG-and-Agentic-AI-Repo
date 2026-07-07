@@ -16,23 +16,27 @@ client = chromadb.HttpClient(host="localhost", port=8000)
 
 collection_name="my_grocery_collection"
 
-def perform_similarity_search(collection,query_term:str)->None:
+def is_query_list(query) -> list:
+    if not isinstance(query, list):
+        return [query]
+    return query
+
+def perform_similarity_search(collection, query_term: list) -> None:
     try:
-        
         filtered_results = collection.query(
-            query_texts=[query_term],
+            query_texts=query_term,
             n_results=10
         )
-        if not filtered_results or not filtered_results['ids'] or (len(filtered_results['documents'])==0):
-            print(f'There is not result with the query search {query_term}')
+        if not filtered_results or not filtered_results['ids'] or (len(filtered_results['documents']) == 0):
+            print(f'There is no result with the query search {query_term}')
         print(f"Number of Results: {len(filtered_results['documents'][0])}")
-        print(f'Top 4 similar documents to "{query_term}":')
+        print(f'Top 4 similar documents to "{query_term[0]}":')
         # Access the nested arrays in 'filtered_results["ids"]' and 'results["filtered_results"]'
         for i in range(min(4, len(filtered_results['ids'][0]))):
-            doc_id =filtered_results['ids'][0][i]  # Get ID from 'ids' array
-            score =filtered_results['distances'][0][i]  # Get score from 'distances' array
+            doc_id = filtered_results['ids'][0][i]  # Get ID from 'ids' array
+            score = filtered_results['distances'][0][i]  # Get score from 'distances' array
             # Retrieve text data from the filtered_results
-            text =filtered_results['documents'][0][i]
+            text = filtered_results['documents'][0][i]
             if not text:
                 print(f' - ID: {doc_id}, Text: "Text not available", Score: {score:.4f}')
             else:
@@ -42,6 +46,12 @@ def perform_similarity_search(collection,query_term:str)->None:
         print(f"Error: {e}")
 def main():
     try:
+        # Delete old collection if it exists to avoid dimension mismatch errors
+        try:
+            client.delete_collection(name=collection_name)
+        except Exception:
+            pass
+
         collection = client.get_or_create_collection(
             name=collection_name,
             metadata={
@@ -78,8 +88,10 @@ def main():
         all_items= collection.get()
         print("Collection contents:")
         print(f"Number of documents: {len(all_items['documents'])}")
-        query_term:str='fruits'
-        perform_similarity_search(collection,query_term)
+        
+        query_term = 'fruits'
+        query_term = is_query_list(query_term)
+        perform_similarity_search(collection, query_term)
 
     except Exception as error:
         print(f"Error: {error}")
