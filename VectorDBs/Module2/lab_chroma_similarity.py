@@ -29,8 +29,8 @@ def perform_similarity_search(collection, query_term: list) -> None:
         )
         if not filtered_results or not filtered_results['ids'] or (len(filtered_results['documents']) == 0):
             print(f'There is no result with the query search {query_term}')
-        print(f"Number of Results: {len(filtered_results['documents'][0])}")
-        print(f'Top 4 similar documents to "{query_term[0]}":')
+            print(f"Number of Results: {len(filtered_results['documents'][0])}")
+            print(f'Top 4 similar documents to "{query_term[0]}":')
         # Access the nested arrays in 'filtered_results["ids"]' and 'results["filtered_results"]'
         for i in range(min(4, len(filtered_results['ids'][0]))):
             doc_id = filtered_results['ids'][0][i]  # Get ID from 'ids' array
