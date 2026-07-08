@@ -1,4 +1,4 @@
-from torch._functorch._aot_autograd.logging_utils import model_name
+
 import ssl
 ssl._create_default_https_context=ssl._create_unverified_context
 
@@ -36,7 +36,63 @@ def perform_advanced_search(collection):
             print(f"Role: {metadata['role']}, Department: {metadata['department']}")
             print(f"Document: {document[:200]}...")
 
-
+        # Filter using Metadata
+        # Finding all Engineering employees:
+        results = collection.get(
+            where={"department": {"$eq": "Engineering"}}
+        )
+        print("\n3. Finding all Engineering employees:")
+        print(f"Found {len(results['ids'])} Engineering employees:")
+        for i in range(len(results['ids'])):
+            name = results['metadatas'][i]['name']
+            role = results['metadatas'][i]['role']
+            exp = results['metadatas'][i]['experience']
+            print(f" - {name}: {role} ({exp} years)")
+        # Finding employees with 10+ years experience
+        results = collection.get(
+            where={"experience": {"$gte": 10}}
+        )
+        print("\n4. Finding employees with 10+ years experience:")
+        print(f"Found {len(results['ids'])} Employees:")
+        for i in range(len(results['ids'])):
+            name = results['metadatas'][i]['name']
+            role = results['metadatas'][i]['role']
+            exp = results['metadatas'][i]['experience']
+            print(f" - {name}: {role} ({exp} years experience)")
+        # Finding employees in California
+        results = collection.get(
+            where={"location": {"$in": ["Los Angeles", "San Francisco"]}}
+        )
+        print("\n5. Finding employees in California:")
+        print(f"Found {len(results['ids'])} employees in California:")
+        for i in range(len(results['ids'])):
+            name = results['metadatas'][i]['name']
+            loc = results['metadatas'][i]['location']
+            print(f" - {name}: {loc}")
+        # === Combined Search: Similarity + Metadata Filtering ===
+        # 6. Finding senior Python developers in major tech cities:
+        # Query: 'senior Python developer full-stack' 
+        # with filters: 8+ years experience, located in New York, San Francisco, Seattle, or Austin
+        print("\n6. Finding senior Python developers in major tech cities:")
+        query_text = "senior Python developer full-stack"
+        results = collection.query(
+            query_texts=[query_text],
+            n_results=3,
+            where={
+                "$and": [
+                    {"experience": {"$gte": 8}},
+                    {"location": {"$in": ["New York", "San Francisco", "Seattle", "Austin"]}}
+                ]
+            }
+        )
+        print(f"Query: '{query_text}'")
+        for i, (doc_id, document, distance) in enumerate(zip(
+            results['ids'][0], results['documents'][0], results['distances'][0]
+        )):
+            metadata = results['metadatas'][0][i]
+            print(f"{i+1}. {metadata['name']} ({doc_id}) - Distance: {distance:.4f}")
+            print(f"Role: {metadata['role']}, Department: {metadata['department']}")
+            print(f"Document: {document[:200]}...")
     except Exception as error:
         print(f"Error in advanced search {error}")
 def main():
