@@ -1,7 +1,7 @@
 import logging
 import chromadb
 from chromadb.utils import embedding_functions
-from config import Config
+from .config import Config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

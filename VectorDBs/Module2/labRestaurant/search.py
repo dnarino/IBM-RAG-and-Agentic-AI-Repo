@@ -1,6 +1,6 @@
 import logging
 from typing import List, Dict, Any, Optional
-from models import FoodItem
+from .models import FoodItem
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

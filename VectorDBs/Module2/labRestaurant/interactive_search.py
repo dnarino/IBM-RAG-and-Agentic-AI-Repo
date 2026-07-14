@@ -1,8 +1,8 @@
 import json
 import logging
-from database import DatabaseManager
-from parser import load_food_data
-from search import (
+from .database import DatabaseManager
+from .parser import load_food_data
+from .search import (
     populate_similarity_collection,
     perform_similarity_search,
     perform_filtered_similarity_search

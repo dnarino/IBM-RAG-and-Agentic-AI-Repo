@@ -1,8 +1,8 @@
 import json
 import logging
 from typing import List
-from models import FoodItem
-from config import Config
+from .models import FoodItem
+from .config import Config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
