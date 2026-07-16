@@ -25,6 +25,7 @@ dependencies = [
     "llama-index-embeddings-huggingface>=0.7.0",
     "llama-index-llms-langchain>=0.8.0",
     "llama-index-llms-openai>=0.7.9",
+    "llama-index-retrievers-bm25>=0.7.1",
     "llama-index-vector-stores-chroma>=0.5.5",
     "numpy>=2.4.6",
     "pydantic>=2.13.4",
