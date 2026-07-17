@@ -43,6 +43,7 @@ from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
 
 from sentence_transformers import SentenceTransformer
+from explanations import BACKGROUND_HELP, VECTOR_INDEX_HELP, BM25_HELP
 
 # Configure logging using RichHandler for beautiful output logs
 logging.basicConfig(
@@ -97,54 +98,8 @@ def openai_embedding() ->OpenAIEmbedding:
     except Exception as e:
         logger.error(f"Failed to initialize OpenAI Embeddings: {e}")
         raise
-"""
-Background
 
-Before diving into the advanced retrieval techniques, let's understand the foundational concepts that make these retrievers powerful.
-What are Advanced Retrievers?
-
-Advanced retrievers in LlamaIndex are sophisticated components that go beyond simple vector similarity search to provide more nuanced, context-aware, and intelligent information retrieval. They combine multiple techniques such as:
-
-    Semantic Understanding: Using embeddings to understand meaning and context
-    Keyword Matching: Precise term-based search for exact specifications
-    Hierarchical Context: Maintaining relationships between different levels of information
-    Multi-Query Processing: Generating and combining results from multiple query variations
-    Fusion Techniques: Intelligently combining results from different retrieval methods
-
-Why are Advanced Retrievers Important?
-
-    Improved Accuracy: Advanced retrievers can find more relevant information by using multiple search strategies
-    Better Context Preservation: They maintain important relationships between pieces of information
-    Reduced Hallucination: More precise retrieval leads to more accurate AI responses
-    Scalability: Efficient retrieval strategies work better with large document collections
-    Flexibility: Different retrieval methods can be combined for optimal results
-
-Index Types Overview
-
-Before exploring advanced retrievers, it's helpful to first understand the three main index types supported by LlamaIndex. Each is designed to support different retrieval scenarios:
-
-VectorStoreIndex:
-
-    Stores vector embeddings for each document chunk
-    Best suited for semantic retrieval based on meaning
-    Commonly used in LLM pipelines and RAG applications
-
-DocumentSummaryIndex:
-
-    Generates and stores summaries of documents at indexing time
-    Uses summaries to filter documents before retrieving full content
-    Especially useful for large and diverse document sets that cannot fit in the context window of an LLM
-
-KeywordTableIndex:
-
-    Extracts keywords from documents and maps them to specific content chunks
-    Enables exact keyword matching for rule-based or hybrid search scenarios
-    Ideal for applications requiring precise term matching
-
-Sample Data Setup¶
-
-We'll use a collection of AI and machine learning documents to demonstrate different retrieval strategies.
-"""
+    # Background details and index types overview have been moved to explanations.py (BACKGROUND_HELP)
 
 def load_sample_data() -> tuple[list[str], dict[str, str]]:
     # Sample data for the lab - AI/ML focused documents
@@ -200,43 +155,7 @@ class AdvanceRetrieversLab:
         print(f"🔢 Created {len(self.nodes)} nodes")
 
     def vector_index_retriever(self, query: str) -> List[NodeWithScore]:
-        """
-        1. Vector Index Retriever - The Foundation
-
-The Vector Index Retriever uses vector embeddings to find semantically related content, making it ideal for general-purpose search and widely used in retrieval-augmented generation (RAG) pipelines.
-
-How it works:
-
-    Documents are split into nodes and embedded using the configured embedding model
-    Query is converted to an embedding vector
-    Returns nodes ranked by cosine similarity to the query embedding
-    Generates embeddings in batches of 2048 nodes by default
-
-When to use:
-
-    General-purpose semantic search (most common use case)
-    Finding conceptually related content based on meaning rather than exact keywords
-    RAG pipelines where semantic understanding is crucial
-    When exact keyword matching isn't the primary requirement
-
-Key characteristics from authoritative source:
-
-    Stores embeddings for each document chunk (VectorStoreIndex foundation)
-    Best for semantic retrieval based on meaning and context
-    Commonly used in LLM pipelines for retrieval-augmented generation
-
-Strengths:
-
-    Excellent semantic understanding and context awareness
-    Handles synonyms and related concepts effectively
-    Works well with natural language queries
-
-Limitations:
-
-    May miss exact keyword matches when specific terms are crucial
-    Requires a good embedding model for optimal performance
-    Can be computationally intensive for large document collections
-"""
+        """Vector Index Retriever - The Foundation (See explanations.VECTOR_INDEX_HELP)."""
         try:
             rprint("\n[bold cyan]" + "=" * 60 + "[/bold cyan]")
             rprint("[bold cyan]            1. VECTOR INDEX RETRIEVER                      [/bold cyan]")
@@ -250,6 +169,7 @@ Limitations:
             logger.error(f"Error during vector index retrieval: {e}")
             raise
     def bm25_retriever(self, query: str) -> List[NodeWithScore]:
+        """BM25 Retriever - Advanced Keyword Search (See explanations.BM25_HELP)."""
         try:
             rprint("\n[bold cyan]" + "=" * 60 + "[/bold cyan]")
             rprint("[bold cyan]            2. BM25 Retriever                      [/bold cyan]")
@@ -302,7 +222,28 @@ Limitations:
         except Exception as e:
             logger.warning(f"BM25 retrieval failed or error occurred ({e}). Falling back to Vector Search...")
             return self.vector_index_retriever(query)
+    def document_summary_retriever(self, query:str)->List[NodeWithScore]:
+        try:
+            rprint("\n[bold cyan]" + "=" * 60 + "[/bold cyan]")
+            rprint("[bold cyan]            4. DOCUMENT SUMMARY INDEX RETRIEVERS                     [/bold cyan]")
+            rprint("[bold cyan]" + "=" * 60 + "[/bold cyan]")
+            # LLM-based document summary retriever
+            doc_summary_retriever_llm = DocumentSummaryIndexLLMRetriever(
+                self.document_summary_index,
+                choice_top_k=3
+            )
+            # Embedding-based document summary retriever 
+            doc_summary_retriever_embedding= DocumentSummaryIndexEmbeddingRetriever(
+                self.document_summary_index,
+                similarity_top_k=3  
+            )
+            llm_results = doc_summary_retriever_llm.retrieve(query)
+            embed_results = doc_summary_retriever_embedding.retrieve(query)
 
+            return llm_results,embed_results
+        except Exception as e:
+            logger.warning(f"DOCUMENT SUMMARY INDEX retrieval failed or error occurred ({e}). Falling back to Vector Search...")
+            return self.vector_index_retriever(query)
             
 if __name__ == "__main__":
     lab = AdvanceRetrieversLab()
@@ -345,4 +286,20 @@ if __name__ == "__main__":
     rprint("   - [italic]k1[/italic] ≈ 1.2: Controls term frequency saturation plateau")
     rprint("   - [italic]b[/italic] ≈ 0.75: Controls document length normalization (0=none, 1=full)")
     rprint("   - [italic]IDF weighting[/italic]: Rare terms automatically get higher relevance scores")
+    
+    query = lab.demo_queries['learning_types']
+    llm_response, embed_response = lab.document_summary_retriever(query)
+    rprint(f"\n[bold yellow]🔍 Query (Summary):[/bold yellow] [italic]{query}[/italic]")
+    rprint("\n[bold green]✨ A) LLM-based Document Summary Retriever:[/bold green]")
+    rprint("[dim]Uses LLM reasoning to evaluate document summaries[/dim]")
+    for i, node in enumerate(llm_response, 1):
+        score_str = f"{node.score:.1f}" if getattr(node, "score", None) is not None else "N/A"
+        rprint(f"  {i}. [bold cyan]Relevance Rating:[/bold cyan] {score_str}")
+        rprint(f"     [dim]{node.text[:120]}...[/dim]")
+    rprint("\n[bold green]✨ B) Embedding-based Document Summary Retriever:[/bold green]")
+    rprint("[dim]Uses vector similarity against summary embeddings[/dim]")
+    for i, node in enumerate(embed_response, 1):
+        score_str = f"{node.score:.4f}" if getattr(node, "score", None) is not None else "N/A (Not propagated)"
+        rprint(f"  {i}. [bold cyan]Similarity Score:[/bold cyan] {score_str}")
+        rprint(f"     [dim]{node.text[:120]}...[/dim]")
         
