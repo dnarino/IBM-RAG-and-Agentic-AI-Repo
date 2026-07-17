@@ -348,7 +348,6 @@ def display_auto_merging_results(query: str, response: List[NodeWithScore]) -> N
         rprint(f"  {i}. [bold cyan]Score:[/bold cyan] {score_str}")
         rprint(f"     [dim]{node.text[:120]}...[/dim]")
 
-
 def display_auto_merging_explanation() -> None:
     """Prints a clean conceptual overview of Auto Merging Retriever context preservation."""
     rprint("\n[bold cyan]🧠 Auto Merging Retriever Context Summary:[/bold cyan]")
