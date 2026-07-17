@@ -1,3 +1,5 @@
+from llama_index.core import StorageContext
+from llama_index.core.storage.docstore import SimpleDocumentStore
 import os
 import json
 from typing import List, Optional
@@ -43,7 +45,7 @@ from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
 
 from sentence_transformers import SentenceTransformer
-from explanations import BACKGROUND_HELP, VECTOR_INDEX_HELP, BM25_HELP
+from explanations import BACKGROUND_HELP, VECTOR_INDEX_HELP, BM25_HELP, AUTO_MERGING_RETRIEVER
 
 # Configure logging using RichHandler for beautiful output logs
 logging.basicConfig(
@@ -246,7 +248,38 @@ class AdvanceRetrieversLab:
             logger.warning(f"DOCUMENT SUMMARY INDEX retrieval failed or error occurred ({e}). Falling back to Vector Search...")
             fallback_res = self.vector_index_retriever(query)
             return fallback_res, fallback_res
-
+    def auto_merging_retriever(self,query:str)-> List[NodeWithScore]:
+        """AUTO MERGING RETRIEVER Retriever - Advanced Keyword Search (See explanations.AUTO_MERGING_RETRIEVER)."""
+        try:
+            rprint("\n[bold cyan]" + "=" * 60 + "[/bold cyan]")
+            rprint("[bold cyan]            4. AUTO MERGING RETRIEVER RETRIEVERS                     [/bold cyan]")
+            rprint("[bold cyan]" + "=" * 60 + "[/bold cyan]")
+            # Create hierarchical nodes
+            node_parser=HierarchicalNodeParser.from_defaults(
+                chunk_sizes=[512,256,128]
+            )
+            hier_nodes= node_parser.get_nodes_from_documents(self.documents)
+            # Create storage context with all nodes
+            docstore= SimpleDocumentStore()
+            docstore.add_documents(hier_nodes)
+            storage_context=StorageContext.from_defaults(
+                docstore=docstore
+            )
+            # Create base index
+            base_index=VectorStoreIndex(hier_nodes,storage_context)
+            base_retriever=base_index.as_retriever(similarity_top_k=6)
+            # Create auto-merging retriever
+            auto_merging_retriever = AutoMergingRetriever(
+                base_retriever,
+                storage_context,
+                verbose=True
+            )
+            llm_results = auto_merging_retriever.retrieve(query)
+            return llm_results
+        except Exception as e:
+            logger.warning(f"AUTO MERGING retrieval failed or error occurred ({e}). Falling back to Vector Search...")
+            fallback_res = self.vector_index_retriever(query)
+            return fallback_res
 
 # =====================================================================
 # PRESENTATION & DISPLAY HELPER FUNCTIONS (Senior Dev Best Practice)
@@ -305,6 +338,23 @@ def display_bm25_explanation() -> None:
     rprint("   - [italic]IDF weighting[/italic]: Rare terms automatically get higher relevance scores")
 
 
+def display_auto_merging_results(query: str, response: List[NodeWithScore]) -> None:
+    """Formats and prints auto-merging retriever results, showing if nodes were auto-merged."""
+    rprint(f"\n[bold yellow]🔍 Query (Auto Merging):[/bold yellow] [italic]{query}[/italic]")
+    rprint(f"[bold green]✨ Retrieved {len(response)} nodes:[/bold green]")
+    for i, node in enumerate(response[:3], 1):
+        score = node.score if getattr(node, 'score', None) is not None else 0.0
+        score_str = f"{score:.4f}" if score > 0.0 else "N/A (Auto-merged/Parent context)"
+        rprint(f"  {i}. [bold cyan]Score:[/bold cyan] {score_str}")
+        rprint(f"     [dim]{node.text[:120]}...[/dim]")
+
+
+def display_auto_merging_explanation() -> None:
+    """Prints a clean conceptual overview of Auto Merging Retriever context preservation."""
+    rprint("\n[bold cyan]🧠 Auto Merging Retriever Context Summary:[/bold cyan]")
+    rprint(AUTO_MERGING_RETRIEVER.strip())
+
+
 if __name__ == "__main__":
     lab = AdvanceRetrieversLab()
     
@@ -323,4 +373,9 @@ if __name__ == "__main__":
     query_sum = lab.demo_queries['learning_types']
     llm_res, embed_res = lab.document_summary_retriever(query_sum)
     display_summary_retrieval_results(query_sum, llm_res, embed_res)
-        
+    
+    # 4. Auto Merging Retrievers
+    query_merging = lab.demo_queries['advanced']
+    merging_resp = lab.auto_merging_retriever(query_merging)
+    display_auto_merging_results(query_merging, merging_resp)
+    display_auto_merging_explanation()
