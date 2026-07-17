@@ -222,7 +222,8 @@ class AdvanceRetrieversLab:
         except Exception as e:
             logger.warning(f"BM25 retrieval failed or error occurred ({e}). Falling back to Vector Search...")
             return self.vector_index_retriever(query)
-    def document_summary_retriever(self, query:str)->List[NodeWithScore]:
+    def document_summary_retriever(self, query: str) -> tuple[List[NodeWithScore], List[NodeWithScore]]:
+        """DOCUMENT_SUMMARY Retriever - Advanced Keyword Search (See explanations.DOCUMENT_SUMMARY_HELP)."""
         try:
             rprint("\n[bold cyan]" + "=" * 60 + "[/bold cyan]")
             rprint("[bold cyan]            4. DOCUMENT SUMMARY INDEX RETRIEVERS                     [/bold cyan]")
@@ -233,50 +234,66 @@ class AdvanceRetrieversLab:
                 choice_top_k=3
             )
             # Embedding-based document summary retriever 
-            doc_summary_retriever_embedding= DocumentSummaryIndexEmbeddingRetriever(
+            doc_summary_retriever_embedding = DocumentSummaryIndexEmbeddingRetriever(
                 self.document_summary_index,
                 similarity_top_k=3  
             )
             llm_results = doc_summary_retriever_llm.retrieve(query)
             embed_results = doc_summary_retriever_embedding.retrieve(query)
 
-            return llm_results,embed_results
+            return llm_results, embed_results
         except Exception as e:
             logger.warning(f"DOCUMENT SUMMARY INDEX retrieval failed or error occurred ({e}). Falling back to Vector Search...")
-            return self.vector_index_retriever(query)
-            
-if __name__ == "__main__":
-    lab = AdvanceRetrieversLab()
-    query = lab.demo_queries["basic"]
-    response = lab.vector_index_retriever(query)
-    
-    rprint(f"\n[bold yellow]🔍 Query:[/bold yellow] [italic]{query}[/italic]")
-    rprint(f"[bold green]✨ Retrieved {len(response)} nodes:[/bold green]")
-    for i, node in enumerate(response, 1):
-        score = node.score if node.score is not None else 0.0
-        rprint(f"\n[bold cyan]Match {i}[/bold cyan] (Score: [bold green]{score:.4f}[/bold green])")
-        rprint(f"  [dim]{node.text}[/dim]")
-    
-    query = lab.demo_queries['technical']
-    response = lab.bm25_retriever(query)
-    
-    rprint(f"\n[bold yellow]🔍 Query (BM25 Keyword):[/bold yellow] [italic]{query}[/italic]")
-    rprint("[bold white]BM25 analyzes exact keyword matches with sophisticated scoring[/bold white]")
+            fallback_res = self.vector_index_retriever(query)
+            return fallback_res, fallback_res
+
+
+# =====================================================================
+# PRESENTATION & DISPLAY HELPER FUNCTIONS (Senior Dev Best Practice)
+# =====================================================================
+
+def display_retrieval_results(query: str, response: List[NodeWithScore], retriever_name: str, is_bm25: bool = False) -> None:
+    """Formats and prints standard vector or keyword-based search results."""
+    rprint(f"\n[bold yellow]🔍 Query ({retriever_name}):[/bold yellow] [italic]{query}[/italic]")
+    if is_bm25:
+        rprint("[bold white]BM25 analyzes exact keyword matches with sophisticated scoring[/bold white]")
     rprint(f"[bold green]✨ Retrieved {len(response)} nodes:[/bold green]")
     
     for i, node in enumerate(response, 1):
-        score = node.score if hasattr(node, 'score') and node.score else 0.0
-        rprint(f"\n[bold cyan]Match {i}[/bold cyan] (BM25 Score: [bold green]{score:.4f}[/bold green])")
+        score = node.score if getattr(node, 'score', None) is not None else 0.0
+        score_label = "BM25 Score" if is_bm25 else "Score"
+        rprint(f"\n[bold cyan]Match {i}[/bold cyan] ({score_label}: [bold green]{score:.4f}[/bold green])")
         rprint(f"  [dim]{node.text}[/dim]")
         
-        # Highlight which query terms appear in the text
-        text_lower = node.text.lower()
-        query_terms = query.lower().split()
-        found_terms = [term for term in query_terms if term in text_lower]
-        if found_terms:
-            rprint(f"   [yellow]→ Found terms:[/yellow] {found_terms}")
-            
-    # Print the BM25 vs TF-IDF explanation only once, outside the loop
+        if is_bm25:
+            text_lower = node.text.lower()
+            query_terms = query.lower().split()
+            found_terms = [term for term in query_terms if term in text_lower]
+            if found_terms:
+                rprint(f"   [yellow]→ Found terms:[/yellow] {found_terms}")
+
+
+def display_summary_retrieval_results(query: str, llm_response: List[NodeWithScore], embed_response: List[NodeWithScore]) -> None:
+    """Formats and prints comparative document summary retriever results."""
+    rprint(f"\n[bold yellow]🔍 Query (Summary):[/bold yellow] [italic]{query}[/italic]")
+    
+    rprint("\n[bold green]✨ A) LLM-based Document Summary Retriever:[/bold green]")
+    rprint("[dim]Uses LLM reasoning to evaluate document summaries[/dim]")
+    for i, node in enumerate(llm_response, 1):
+        score_str = f"{node.score:.1f}" if getattr(node, "score", None) is not None else "N/A"
+        rprint(f"  {i}. [bold cyan]Relevance Rating:[/bold cyan] {score_str}")
+        rprint(f"     [dim]{node.text[:120]}...[/dim]")
+        
+    rprint("\n[bold green]✨ B) Embedding-based Document Summary Retriever:[/bold green]")
+    rprint("[dim]Uses vector similarity against summary embeddings[/dim]")
+    for i, node in enumerate(embed_response, 1):
+        score_str = f"{node.score:.4f}" if getattr(node, "score", None) is not None else "N/A (Not propagated)"
+        rprint(f"  {i}. [bold cyan]Similarity Score:[/bold cyan] {score_str}")
+        rprint(f"     [dim]{node.text[:120]}...[/dim]")
+
+
+def display_bm25_explanation() -> None:
+    """Prints a clean conceptual overview comparing BM25 vs TF-IDF."""
     rprint("\n[bold cyan]🧠 BM25 vs TF-IDF Comparison Summary:[/bold cyan]")
     rprint("[bold white]1. TF-IDF Problem:[/bold white] Linear term frequency scaling (e.g., 100 occurrences → 100x score)")
     rprint("   [bold green]BM25 Solution:[/bold green] Saturation function (scores plateau as occurrences increase)")
@@ -286,20 +303,24 @@ if __name__ == "__main__":
     rprint("   - [italic]k1[/italic] ≈ 1.2: Controls term frequency saturation plateau")
     rprint("   - [italic]b[/italic] ≈ 0.75: Controls document length normalization (0=none, 1=full)")
     rprint("   - [italic]IDF weighting[/italic]: Rare terms automatically get higher relevance scores")
+
+
+if __name__ == "__main__":
+    lab = AdvanceRetrieversLab()
     
-    query = lab.demo_queries['learning_types']
-    llm_response, embed_response = lab.document_summary_retriever(query)
-    rprint(f"\n[bold yellow]🔍 Query (Summary):[/bold yellow] [italic]{query}[/italic]")
-    rprint("\n[bold green]✨ A) LLM-based Document Summary Retriever:[/bold green]")
-    rprint("[dim]Uses LLM reasoning to evaluate document summaries[/dim]")
-    for i, node in enumerate(llm_response, 1):
-        score_str = f"{node.score:.1f}" if getattr(node, "score", None) is not None else "N/A"
-        rprint(f"  {i}. [bold cyan]Relevance Rating:[/bold cyan] {score_str}")
-        rprint(f"     [dim]{node.text[:120]}...[/dim]")
-    rprint("\n[bold green]✨ B) Embedding-based Document Summary Retriever:[/bold green]")
-    rprint("[dim]Uses vector similarity against summary embeddings[/dim]")
-    for i, node in enumerate(embed_response, 1):
-        score_str = f"{node.score:.4f}" if getattr(node, "score", None) is not None else "N/A (Not propagated)"
-        rprint(f"  {i}. [bold cyan]Similarity Score:[/bold cyan] {score_str}")
-        rprint(f"     [dim]{node.text[:120]}...[/dim]")
+    # 1. Vector Index Retriever
+    query_basic = lab.demo_queries["basic"]
+    vector_res = lab.vector_index_retriever(query_basic)
+    display_retrieval_results(query_basic, vector_res, "Vector")
+    
+    # 2. BM25 Retriever
+    query_tech = lab.demo_queries['technical']
+    bm25_res = lab.bm25_retriever(query_tech)
+    display_retrieval_results(query_tech, bm25_res, "BM25 Keyword", is_bm25=True)
+    display_bm25_explanation()
+    
+    # 3. Document Summary Index Retrievers
+    query_sum = lab.demo_queries['learning_types']
+    llm_res, embed_res = lab.document_summary_retriever(query_sum)
+    display_summary_retrieval_results(query_sum, llm_res, embed_res)
         
