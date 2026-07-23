@@ -128,12 +128,21 @@ logger.info(f"Executing search query: '{query_text}'")
 distances, indices = search(query_text, k=5)
 
 if len(indices) > 0 and len(indices[0]) > 0:
+    # A) Preprocessed View (What FAISS & Universal Sentence Encoder indexed)
     print("\n" + "=" * 60)
-    print(f"SEARCH RESULTS FOR QUERY: '{query_text}'")
+    print(f"1. PREPROCESSED SEARCH RESULTS (Vector Index View): '{query_text}'")
     print("=" * 60)
-
     for i, idx in enumerate(indices[0]):
         print(f"Rank {i+1}: (Distance: {distances[0][i]:.4f})")
         print(f"{processed_documents[idx][:250]}...\n")
+
+    # B) Human Readable View (Original Unprocessed Raw Document)
+    print("=" * 60)
+    print(f"2. ORIGINAL RAW DOCUMENTS (Human Readable View): '{query_text}'")
+    print("=" * 60)
+    for i, idx in enumerate(indices[0]):
+        print(f"Rank {i+1}: (Distance: {distances[0][i]:.4f})")
+        print(f"{documents[idx][:350]}...\n")
 else:
     logger.warning("No search results were retrieved.")
+
