@@ -280,6 +280,30 @@ class AdvanceRetrieversLab:
             logger.warning(f"AUTO MERGING retrieval failed or error occurred ({e}). Falling back to Vector Search...")
             fallback_res = self.vector_index_retriever(query)
             return fallback_res
+    def recursive_retriever(self,query:str) -> List[NodeWithScore]:
+        """5. RECURSIVE RETRIEVER - Advanced Keyword Search (See explanations.RECURSIVE_RETRIEVER_HELP)."""
+        try:
+            rprint("\n[bold cyan]" + "=" * 60 + "[/bold cyan]")
+            rprint("[bold cyan]            5. RECURSIVE RETRIEVER                    [/bold cyan]")
+            rprint("[bold cyan]" + "=" * 60 + "[/bold cyan]")
+            # LLM-based document summary retriever
+            doc_summary_retriever_llm = DocumentSummaryIndexLLMRetriever(
+                self.document_summary_index,
+                choice_top_k=3
+            )
+            # Embedding-based document summary retriever 
+            doc_summary_retriever_embedding = DocumentSummaryIndexEmbeddingRetriever(
+                self.document_summary_index,
+                similarity_top_k=3  
+            )
+            llm_results = doc_summary_retriever_llm.retrieve(query)
+            embed_results = doc_summary_retriever_embedding.retrieve(query)
+
+            return llm_results, embed_results
+        except Exception as e:
+            logger.warning(f"DOCUMENT SUMMARY INDEX retrieval failed or error occurred ({e}). Falling back to Vector Search...")
+            fallback_res = self.vector_index_retriever(query)
+            return fallback_res, fallback_res
 
 # =====================================================================
 # PRESENTATION & DISPLAY HELPER FUNCTIONS (Senior Dev Best Practice)
@@ -378,3 +402,7 @@ if __name__ == "__main__":
     merging_resp = lab.auto_merging_retriever(query_merging)
     display_auto_merging_results(query_merging, merging_resp)
     display_auto_merging_explanation()
+
+    # 5. Recursive Retriever Helper
+    query_recursive = lab.demo.demo_queries['applications']
+    recursive_resp= lab.recursive_retriever(query_recursive)
